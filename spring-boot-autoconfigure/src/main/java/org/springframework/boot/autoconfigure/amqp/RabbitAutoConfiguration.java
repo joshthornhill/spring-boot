@@ -109,19 +109,7 @@ public class RabbitAutoConfiguration {
 		public ConnectionFactory rabbitConnectionFactory(RabbitProperties config)
 				throws Exception {
 			RabbitConnectionFactoryBean factory = new RabbitConnectionFactoryBean();
-			if (config.getHost() != null) {
-				factory.setHost(config.getHost());
-				factory.setPort(config.getPort());
-			}
-			if (config.getUsername() != null) {
-				factory.setUsername(config.getUsername());
-			}
-			if (config.getPassword() != null) {
-				factory.setPassword(config.getPassword());
-			}
-			if (config.getVirtualHost() != null) {
-				factory.setVirtualHost(config.getVirtualHost());
-			}
+			factory.setUri(config.getURI());
 			if (config.getRequestedHeartbeat() != null) {
 				factory.setRequestedHeartbeat(config.getRequestedHeartbeat());
 			}

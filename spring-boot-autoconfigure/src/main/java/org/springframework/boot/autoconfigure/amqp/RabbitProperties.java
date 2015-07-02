@@ -16,12 +16,16 @@
 
 package org.springframework.boot.autoconfigure.amqp;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.util.LinkedHashSet;
 import java.util.Properties;
 import java.util.Set;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.util.StringUtils;
+import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.util.UriUtils;
 
 /**
  * Configuration properties for Rabbit.
@@ -178,6 +182,34 @@ public class RabbitProperties {
 
 	public void setRequestedHeartbeat(Integer requestedHeartbeat) {
 		this.requestedHeartbeat = requestedHeartbeat;
+	}
+
+	public URI getURI() {
+	    UriComponentsBuilder builder = UriComponentsBuilder.newInstance();
+	    if(getSsl().isEnabled()) {
+	        builder = builder.scheme("amqps");
+	    }
+	    else {
+	        builder = builder.scheme("amqp");
+	    }
+	    String encodedVhost = getVirtualHost();
+	    try {
+	        encodedVhost = UriUtils.encodePathSegment(getVirtualHost(),"US-ASCII");
+	    } catch (UnsupportedEncodingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+	    builder = builder.host(getHost()).port(getPort()).path(encodedVhost);
+	    if(getUsername()!=null) {
+	        if(getPassword()!=null) {
+	            builder = builder.userInfo(getUsername()+":"+getPassword());
+	        }
+	        else {
+	            builder = builder.userInfo(getUsername());
+	        }
+	    }
+	    return builder.build().toUri();
+
 	}
 
 	public static class Ssl {
