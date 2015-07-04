@@ -19,13 +19,16 @@ package org.springframework.boot.autoconfigure.amqp;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for {@link RabbitProperties}.
  *
  * @author Dave Syer
  * @author Andy Wilkinson
+ * @author Josh Thornhill
  */
 public class RabbitPropertiesTests {
 
@@ -34,14 +37,18 @@ public class RabbitPropertiesTests {
 	@Test
 	public void addressesNotSet() {
 		assertEquals("localhost", this.properties.getHost());
+		assertEquals("localhost", this.properties.getUri().getHost());
 		assertEquals(5672, this.properties.getPort());
+		assertEquals(5672, this.properties.getUri().getPort());
 	}
 
 	@Test
 	public void addressesSingleValued() {
 		this.properties.setAddresses("myhost:9999");
 		assertEquals("myhost", this.properties.getHost());
+		assertEquals("myhost", this.properties.getUri().getHost());
 		assertEquals(9999, this.properties.getPort());
+		assertEquals(9999, this.properties.getUri().getPort());
 	}
 
 	@Test
@@ -49,6 +56,7 @@ public class RabbitPropertiesTests {
 		this.properties.setAddresses("myhost:9999,otherhost:1111");
 		assertNull(this.properties.getHost());
 		assertEquals(9999, this.properties.getPort());
+		assertNotNull(this.properties.getUri());
 	}
 
 	@Test
@@ -56,14 +64,18 @@ public class RabbitPropertiesTests {
 		this.properties.setAddresses("myhost:9999,root:password@otherhost:1111/host");
 		assertNull(this.properties.getHost());
 		assertEquals(9999, this.properties.getPort());
+		assertNotNull(this.properties.getUri());
 		assertEquals("root", this.properties.getUsername());
+		assertEquals("root:password", this.properties.getUri().getUserInfo());
 		assertEquals("host", this.properties.getVirtualHost());
+		assertEquals("/host", this.properties.getUri().getPath());
 	}
 
 	@Test
 	public void addressesDoubleValuedPreservesOrder() {
 		this.properties.setAddresses("myhost:9999,ahost:1111/host");
 		assertNull(this.properties.getHost());
+		assertNotNull(this.properties.getUri());
 		assertEquals("myhost:9999,ahost:1111", this.properties.getAddresses());
 	}
 
@@ -71,18 +83,26 @@ public class RabbitPropertiesTests {
 	public void addressesSingleValuedWithCredentials() {
 		this.properties.setAddresses("amqp://root:password@otherhost:1111/host");
 		assertEquals("otherhost", this.properties.getHost());
+		assertEquals("otherhost", this.properties.getUri().getHost());
 		assertEquals(1111, this.properties.getPort());
+		assertEquals(1111, this.properties.getUri().getPort());
 		assertEquals("root", this.properties.getUsername());
+		assertEquals("root:password", this.properties.getUri().getUserInfo());
 		assertEquals("host", this.properties.getVirtualHost());
+		assertEquals("/host", this.properties.getUri().getPath());
 	}
 
 	@Test
 	public void addressesSingleValuedWithCredentialsDefaultPort() {
 		this.properties.setAddresses("amqp://root:password@lemur.cloudamqp.com/host");
 		assertEquals("lemur.cloudamqp.com", this.properties.getHost());
+		assertEquals("lemur.cloudamqp.com", this.properties.getUri().getHost());
 		assertEquals(5672, this.properties.getPort());
+		assertEquals(5672, this.properties.getUri().getPort());
 		assertEquals("root", this.properties.getUsername());
+		assertEquals("root:password", this.properties.getUri().getUserInfo());
 		assertEquals("host", this.properties.getVirtualHost());
+		assertEquals("/host", this.properties.getUri().getPath());
 		assertEquals("lemur.cloudamqp.com:5672", this.properties.getAddresses());
 	}
 
@@ -90,33 +110,41 @@ public class RabbitPropertiesTests {
 	public void addressWithTrailingSlash() {
 		this.properties.setAddresses("amqp://root:password@otherhost:1111/");
 		assertEquals("otherhost", this.properties.getHost());
+		assertEquals("otherhost", this.properties.getUri().getHost());
 		assertEquals(1111, this.properties.getPort());
+		assertEquals(1111, this.properties.getUri().getPort());
 		assertEquals("root", this.properties.getUsername());
+		assertEquals("root:password", this.properties.getUri().getUserInfo());
 		assertEquals("/", this.properties.getVirtualHost());
+		assertTrue("/%2F".equalsIgnoreCase(this.properties.getUri().getRawPath()));
 	}
 
 	@Test
 	public void testDefaultVirtualHost() {
 		this.properties.setVirtualHost("/");
 		assertEquals("/", this.properties.getVirtualHost());
+		assertTrue("/%2F".equalsIgnoreCase(this.properties.getUri().getRawPath()));
 	}
 
 	@Test
 	public void testEmptyVirtualHost() {
 		this.properties.setVirtualHost("");
 		assertEquals("/", this.properties.getVirtualHost());
+		assertTrue("/%2F".equalsIgnoreCase(this.properties.getUri().getRawPath()));
 	}
 
 	@Test
 	public void testCustomVirtualHost() {
 		this.properties.setVirtualHost("myvHost");
 		assertEquals("myvHost", this.properties.getVirtualHost());
+		assertEquals("/myvHost", this.properties.getUri().getPath());
 	}
 
 	@Test
-	public void testCustomFalsyVirtualHost() {
+	public void testCustomFalseVirtualHost() {
 		this.properties.setVirtualHost("/myvHost");
 		assertEquals("/myvHost", this.properties.getVirtualHost());
+		assertTrue("/%2FmyvHost".equalsIgnoreCase(this.properties.getUri().getRawPath()));
 	}
 
 }

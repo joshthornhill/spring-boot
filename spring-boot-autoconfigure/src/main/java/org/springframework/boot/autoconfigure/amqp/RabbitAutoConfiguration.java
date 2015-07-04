@@ -109,7 +109,7 @@ public class RabbitAutoConfiguration {
 		public ConnectionFactory rabbitConnectionFactory(RabbitProperties config)
 				throws Exception {
 			RabbitConnectionFactoryBean factory = new RabbitConnectionFactoryBean();
-			factory.setUri(config.getURI());
+			factory.setUri(config.getUri());
 			if (config.getRequestedHeartbeat() != null) {
 				factory.setRequestedHeartbeat(config.getRequestedHeartbeat());
 			}
